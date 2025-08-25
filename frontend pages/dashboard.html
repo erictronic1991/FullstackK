@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+  <h2>Your Tasks</h2>
+  <form id="taskForm">
+    <input type="text" id="taskInput" placeholder="New task" required />
+    <button type="submit">Add Task</button>
+  </form>
+  <ul id="taskList"></ul>
+  <button id="logoutBtn">Logout</button>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location = 'login.html';
+    }
+
+    const taskForm = document.getElementById('taskForm');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    async function loadTasks() {
+      const res = await fetch('http://localhost:3001/tasks', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        const tasks = await res.json();
+        taskList.innerHTML = '';
+        tasks.forEach(task => {
+          const li = document.createElement('li');
+          li.textContent = task.text;
+          taskList.appendChild(li);
+        });
+      } else {
+        // Token invalid or expired
+        localStorage.removeItem('token');
+        window.location = 'login.html';
+      }
+    }
+
+    taskForm.onsubmit = async (e) => {
+      e.preventDefault();
+
+      const res = await fetch('http://localhost:3001/tasks', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token 
+        },
+        body: JSON.stringify({ text: taskInput.value })
+      });
+
+      if (res.ok) {
+        taskInput.value = '';
+        loadTasks();
+      } else {
+        alert('Failed to add task');
+      }
+    };
+
+    logoutBtn.onclick = () => {
+      localStorage.removeItem('token');
+      window.location = 'login.html';
+    };
+
+    loadTasks();
+  </script>
+</body>
+</html>

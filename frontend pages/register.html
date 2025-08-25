@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>Register</title></head>
+<body>
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="text" id="username" placeholder="Username" required /><br />
+    <input type="password" id="password" placeholder="Password" required /><br />
+    <button type="submit">Register</button>
+  </form>
+  <p id="message"></p>
+  <a href="login.html">Already have an account? Login here</a>
+
+  <script>
+    const form = document.getElementById('registerForm');
+    const message = document.getElementById('message');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      const res = await fetch('http://localhost:3001/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await res.json();
+      message.innerText = data.message || 'Registration failed';
+      if (res.ok) {
+        setTimeout(() => { window.location = 'login.html'; }, 1500);
+      }
+    }
+  </script>
+</body>
+</html>
